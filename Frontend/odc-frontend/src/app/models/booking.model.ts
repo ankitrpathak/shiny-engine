@@ -27,14 +27,17 @@ export interface Booking {
   packageId: number;
   packageTitle: string;
   amount: number;
+  vehicleType?: string;
   vehicleModel: string;
   vehicleNumber: string;
-  address: string;
-  city: string;
+  serviceAddress?: string;
+  address?: string;
+  city?: string;
   serviceDate: string;
   serviceTimeSlot: string;
   status: BookingStatus;
   paid: boolean;
+  customerNotes?: string;
   notes?: string;
   createdAt: string;
   updatedAt: string;
@@ -42,11 +45,14 @@ export interface Booking {
 
 export interface CreateBookingRequest {
   packageId: number;
+  vehicleType?: string;
   vehicleModel: string;
   vehicleNumber: string;
-  address: string;
-  city: string;
+  serviceAddress?: string;
+  address?: string;
+  city?: string;
   serviceDate: string;
   serviceTimeSlot: string;
+  customerNotes?: string;
   notes?: string;
 }

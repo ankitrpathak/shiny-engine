@@ -29,13 +29,16 @@ export class CustomerDashboardComponent implements OnInit {
   bookingSubmitting = false;
   bookingForm: CreateBookingRequest = {
     packageId: 1,
+    vehicleType: 'Sedan',
     vehicleModel: '',
     vehicleNumber: '',
     address: '',
-    city: '',
+    city: 'Bangalore',
+    serviceAddress: '',
     serviceDate: '',
     serviceTimeSlot: '09:00 - 10:30',
-    notes: ''
+    notes: '',
+    customerNotes: ''
   };
 
   // Review Modal State
@@ -85,13 +88,16 @@ export class CustomerDashboardComponent implements OnInit {
 
     this.bookingForm = {
       packageId: this.packages.length > 0 ? this.packages[0].id : 1,
+      vehicleType: 'Sedan',
       vehicleModel: '',
       vehicleNumber: '',
       address: '',
       city: 'Bangalore',
+      serviceAddress: '',
       serviceDate: dateStr,
       serviceTimeSlot: '09:00 - 10:30',
-      notes: ''
+      notes: '',
+      customerNotes: ''
     };
     this.showBookingModal = true;
   }
@@ -106,8 +112,26 @@ export class CustomerDashboardComponent implements OnInit {
       return;
     }
 
+    const fullAddress = this.bookingForm.city
+      ? `${this.bookingForm.address.trim()}, ${this.bookingForm.city.trim()}`
+      : this.bookingForm.address.trim();
+
+    const payload: CreateBookingRequest = {
+      packageId: Number(this.bookingForm.packageId),
+      vehicleType: this.bookingForm.vehicleType || 'Sedan',
+      vehicleModel: this.bookingForm.vehicleModel.trim(),
+      vehicleNumber: this.bookingForm.vehicleNumber.trim().toUpperCase(),
+      serviceAddress: fullAddress,
+      address: fullAddress,
+      city: this.bookingForm.city,
+      serviceDate: this.bookingForm.serviceDate,
+      serviceTimeSlot: this.bookingForm.serviceTimeSlot,
+      customerNotes: this.bookingForm.notes || '',
+      notes: this.bookingForm.notes || ''
+    };
+
     this.bookingSubmitting = true;
-    this.bookingService.createBooking(this.bookingForm).subscribe({
+    this.bookingService.createBooking(payload).subscribe({
       next: () => {
         this.bookingSubmitting = false;
         this.closeBookingModal();
@@ -116,7 +140,7 @@ export class CustomerDashboardComponent implements OnInit {
       },
       error: (err) => {
         this.bookingSubmitting = false;
-        this.showAlert(err.error?.message || 'Failed to create booking.', 'error');
+        this.showAlert(this.formatErrorMessage(err, 'Failed to create booking.'), 'error');
       }
     });
   }
@@ -150,7 +174,7 @@ export class CustomerDashboardComponent implements OnInit {
                 },
                 error: (err) => {
                   this.paymentProcessing = false;
-                  this.showAlert(err.error?.message || 'Payment verification failed.', 'error');
+                  this.showAlert(this.formatErrorMessage(err, 'Payment verification failed.'), 'error');
                 }
               });
           },
@@ -162,7 +186,7 @@ export class CustomerDashboardComponent implements OnInit {
       },
       error: (err) => {
         this.paymentProcessing = false;
-        this.showAlert(err.error?.message || 'Could not initiate Razorpay order.', 'error');
+        this.showAlert(this.formatErrorMessage(err, 'Could not initiate Razorpay order.'), 'error');
       }
     });
   }
@@ -198,7 +222,7 @@ export class CustomerDashboardComponent implements OnInit {
         },
         error: (err) => {
           this.reviewSubmitting = false;
-          this.showAlert(err.error?.message || 'Failed to submit review.', 'error');
+          this.showAlert(this.formatErrorMessage(err, 'Failed to submit review.'), 'error');
         }
       });
   }
@@ -210,13 +234,39 @@ export class CustomerDashboardComponent implements OnInit {
           this.showAlert(`Booking #${booking.id} cancelled.`, 'success');
           this.loadMyBookings();
         },
-        error: (err) => this.showAlert(err.error?.message || 'Could not cancel booking.', 'error')
+        error: (err) => this.showAlert(this.formatErrorMessage(err, 'Could not cancel booking.'), 'error')
       });
     }
   }
 
-  private showAlert(msg: string, type: 'success' | 'error'): void {
-    this.alertMessage = msg;
+  private formatErrorMessage(err: any, fallback: string): string {
+    if (!err) return fallback;
+    const body = err.error;
+    if (typeof body === 'string') return body;
+    if (body) {
+      if (typeof body.message === 'string') return body.message;
+      if (typeof body.message === 'object' && body.message !== null) {
+        return Object.values(body.message).join('; ');
+      }
+      if (typeof body.validationErrors === 'object' && body.validationErrors !== null) {
+        return Object.values(body.validationErrors).join('; ');
+      }
+      if (typeof body.error === 'string') return body.error;
+    }
+    if (err.message && typeof err.message === 'string') return err.message;
+    return fallback;
+  }
+
+  private showAlert(msg: any, type: 'success' | 'error'): void {
+    if (typeof msg === 'object' && msg !== null) {
+      if (typeof msg.message === 'string') {
+        this.alertMessage = msg.message;
+      } else {
+        this.alertMessage = Object.values(msg).join('; ');
+      }
+    } else {
+      this.alertMessage = String(msg || '');
+    }
     this.alertType = type;
     setTimeout(() => {
       this.alertMessage = '';

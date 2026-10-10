@@ -126,13 +126,24 @@
 
         <div class="form-row">
           <div class="form-group">
+            <label for="vType">Vehicle Type *</label>
+            <select id="vType" [(ngModel)]="bookingForm.vehicleType" name="vehicleType" required>
+              <option value="Sedan">Sedan</option>
+              <option value="SUV">SUV</option>
+              <option value="Hatchback">Hatchback</option>
+              <option value="Compact SUV">Compact SUV</option>
+              <option value="Luxury">Luxury</option>
+            </select>
+          </div>
+          <div class="form-group">
             <label for="vModel">Vehicle Model *</label>
             <input type="text" id="vModel" [(ngModel)]="bookingForm.vehicleModel" name="vehicleModel" placeholder="e.g. Honda City" required />
           </div>
-          <div class="form-group">
-            <label for="vNumber">Registration Number *</label>
-            <input type="text" id="vNumber" [(ngModel)]="bookingForm.vehicleNumber" name="vehicleNumber" placeholder="e.g. KA01AB1234" required />
-          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="vNumber">Registration Number *</label>
+          <input type="text" id="vNumber" [(ngModel)]="bookingForm.vehicleNumber" name="vehicleNumber" placeholder="e.g. KA01AB1234" required />
         </div>
 
         <div class="form-row">

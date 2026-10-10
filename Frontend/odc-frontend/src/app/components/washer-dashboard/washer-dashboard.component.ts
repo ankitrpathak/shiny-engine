@@ -82,8 +82,16 @@ export class WasherDashboardComponent implements OnInit {
     return Math.round((sum / this.reviews.length) * 10) / 10;
   }
 
-  private showAlert(msg: string, type: 'success' | 'error'): void {
-    this.alertMessage = msg;
+  private showAlert(msg: any, type: 'success' | 'error'): void {
+    if (typeof msg === 'object' && msg !== null) {
+      if (typeof msg.message === 'string') {
+        this.alertMessage = msg.message;
+      } else {
+        this.alertMessage = Object.values(msg).join('; ');
+      }
+    } else {
+      this.alertMessage = String(msg || '');
+    }
     this.alertType = type;
     setTimeout(() => {
       this.alertMessage = '';

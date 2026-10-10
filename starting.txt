@@ -1,31 +1,33 @@
 ================================================================================
-🚗✨ ON-DEMAND CAR WASH PLATFORM - SIMPLE STEP-BY-STEP STARTUP GUIDE
+🚗✨ ON-DEMAND CAR WASH PLATFORM - SIMPLE STEP-BY-STEP STARTUP GUIDE (LOCALHOST)
 ================================================================================
 This guide is written in plain, simple English so that ANYONE can extract this
-project on any laptop and run the entire platform smoothly for demonstrations.
+project on any laptop and run the entire platform smoothly on localhost for
+demonstrations to managers, evaluators, and teams.
 ================================================================================
 
 --------------------------------------------------------------------------------
-STEP 1: CHECK 3 PREREQUISITES (Takes 1 minute)
+STEP 1: PREREQUISITES
 --------------------------------------------------------------------------------
-Before starting, open "Command Prompt" (cmd) or PowerShell and verify you have:
-
 1. Java 21 (or later)
    Type:   java -version
    Check:  Should display version 21 (e.g., java version "21.0.6")
 
-2. Apache Maven (3.9+)
-   Type:   mvn -version
-   Check:  Should display Apache Maven 3.9.x
-
-3. Node.js & npm (v20 or v22)
+2. Node.js & npm (v20 or v22)
    Type:   node -v
    Type:   npm -v
-   Check:  Should display v20.x or v22.x
 
-*NOTE: You DO NOT need to install or configure any database! All microservices
-come with a zero-config in-memory database (H2) that seeds sample data, default
-users, wash packages, and demo reviews automatically on startup.*
+*NOTE ABOUT MAVEN (mvn):*
+You DO NOT need Maven installed globally! A lightweight Maven wrapper (`mvnw.cmd`)
+is bundled right in the project root. `start-backend.bat` will automatically
+detect and use `mvnw.cmd` if `mvn` is not on your PATH.
+
+*NOTE ABOUT DATABASE & BROKER:*
+You DO NOT need to install or configure MySQL or RabbitMQ for your demonstration!
+All microservices come with zero-config in-memory database (H2) that seeds sample
+packages, default accounts, and test data automatically on startup. RabbitMQ
+event publishing is wrapped in safe try-catch blocks so services continue
+smoothly even if RabbitMQ is not installed.
 
 
 --------------------------------------------------------------------------------
@@ -36,67 +38,72 @@ In the extracted project folder, we have created two double-clickable scripts:
 1. Double-click "start-backend.bat"
    - It will open separate terminal windows for all 8 microservices in the
      correct order (Eureka Server first, then Gateway, then all services).
-   - Wait about 30-40 seconds for all services to start and register.
+   - If Maven is not installed in your PATH, it will automatically use `mvnw.cmd`.
+   - Wait about 30-40 seconds for all services to start and register with Eureka.
 
 2. Double-click "start-frontend.bat"
-   - It will install frontend dependencies if needed and start the Angular
-     server on http://localhost:4200.
+   - It starts the Angular frontend on http://localhost:4200.
 
 3. Open your browser and go to:
    👉 http://localhost:4200
 
 
 --------------------------------------------------------------------------------
-STEP 3: ALTERNATIVE MANUAL STARTUP (If corporate laptop blocks .bat files)
+STEP 3: ALTERNATIVE STARTUP METHODS (For Corporate Laptops)
 --------------------------------------------------------------------------------
-If your corporate laptop restricts double-clicking .bat files, simply open
-separate terminal/command prompt tabs and run these commands:
+Method A: Using IntelliJ IDEA / Eclipse (Most Common & Recommended)
+   1. Open the project folder in IntelliJ IDEA.
+   2. Allow IntelliJ to sync the Maven projects (it uses its bundled Maven).
+   3. Open and run each `@SpringBootApplication` main class in this order:
+      - `EurekaServerApplication` (port 8761)
+      - `ApiGatewayApplication` (port 8080)
+      - `UserServiceApplication` (port 8081)
+      - `BookingServiceApplication` (port 8083)
+      - `PaymentServiceApplication` (port 8084)
+      - `ReviewServiceApplication` (port 8085)
+      - `NotificationServiceApplication` (port 8086)
+      - `AdminServiceApplication` (port 8082)
+   4. For Frontend, open a terminal in `Frontend\odc-frontend` and run:
+      `npm start`
 
-[Terminal 1 - Service Registry]
-   cd eureka-server
-   mvn spring-boot:run
-   (Wait 10 seconds before starting the next)
-
-[Terminal 2 - API Gateway]
-   cd api-gateway
-   mvn spring-boot:run
-
-[Terminal 3 - User Service]
-   cd OnDemandCarWash-user-service
-   mvn spring-boot:run
-
-[Terminal 4 - Booking Service]
-   cd OnDemandCarWash-booking-service
-   mvn spring-boot:run
-
-[Terminal 5 - Payment Service]
-   cd OnDemandCarWash-payment-service
-   mvn spring-boot:run
-
-[Terminal 6 - Review Service]
-   cd OnDemandCarWash-review-service
-   mvn spring-boot:run
-
-[Terminal 7 - Notification Service]
-   cd OnDemandCarWash-notification-service
-   mvn spring-boot:run
-
-[Terminal 8 - Admin Service]
-   cd adminservice
-   mvn spring-boot:run
-
-[Terminal 9 - Frontend Web App]
-   cd Frontend\odc-frontend
-   npm install
-   npm start
-   (Then open http://localhost:4200)
+Method B: Manual Terminal using mvnw.cmd (if 'mvn' is not recognized)
+   Instead of `mvn spring-boot:run`, run:
+   `..\mvnw.cmd spring-boot:run` from each microservice directory.
 
 
 --------------------------------------------------------------------------------
-STEP 4: PRE-CONFIGURED TEST ACCOUNTS (Instant 1-Click Login)
+STEP 4: HOW TO CONNECT LOCAL MYSQL & RABBITMQ (OPTIONAL)
 --------------------------------------------------------------------------------
-The login screen has 4 colored "Quick-Fill" buttons at the top. Clicking any
-button automatically fills in the email and password for that role:
+If you want to demonstrate connecting to a real local MySQL database or
+local RabbitMQ instance on your laptop:
+
+A. CONNECTING LOCAL MYSQL (Port 3306):
+   1. Ensure your local MySQL server is running (e.g., MySQL Workbench / Service).
+   2. Log into MySQL and run:
+      CREATE DATABASE carwash_db;
+   3. In the project root, create a file named `.env` (or copy `.env.example` to `.env`).
+   4. Put your MySQL credentials in `.env`:
+      DB_URL=jdbc:mysql://localhost:3306/carwash_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      DB_DRIVER=com.mysql.cj.jdbc.Driver
+      DB_DIALECT=org.hibernate.dialect.MySQLDialect
+      DB_USERNAME=root
+      DB_PASSWORD=your_mysql_password
+   5. Restart backend services. Hibernate will automatically create all tables
+      and the application will seed the catalogs into MySQL!
+
+B. CONNECTING LOCAL RABBITMQ (Port 5672):
+   1. Start your local RabbitMQ server on Windows.
+   2. Default settings in each service already point to `localhost:5672` with
+      username `guest` and password `guest`.
+   3. No `.env` changes are required for default RabbitMQ!
+   4. Microservices will now send real asynchronous AMQP messages across
+      Booking, Notification, and Admin services.
+
+
+--------------------------------------------------------------------------------
+STEP 5: PRE-CONFIGURED TEST ACCOUNTS (Instant 1-Click Login)
+--------------------------------------------------------------------------------
+The login screen has 4 colored "Quick-Fill" buttons at the top:
 
 1. 👑 Super Admin (GOD Account):
    - Email:     god@carwash.com
@@ -121,10 +128,9 @@ button automatically fills in the email and password for that role:
 
 
 --------------------------------------------------------------------------------
-STEP 5: RECOMMENDED PRESENTATION DEMO FLOW (Follow this for your demo!)
+STEP 6: RECOMMENDED PRESENTATION DEMO FLOW (Follow this for your manager!)
 --------------------------------------------------------------------------------
-To give a presentation to your team or evaluators, show this
-end-to-end lifecycle:
+To present to your manager, show this smooth end-to-end flow:
 
 1. SHOW THE LANDING PAGE (http://localhost:4200)
    - Show the hero banner, 4 packages (Express ₹399, Interior ₹799, Full Premium
@@ -134,17 +140,16 @@ end-to-end lifecycle:
    - Click "Sign In", click the blue "🚗 Customer" button, click "Sign In".
    - You are now on the Customer Dashboard.
    - Click "➕ Book a Car Wash".
-   - Select package "Full Premium Detailing", enter vehicle "Honda City",
-     plate "KA01AB1234", address "Tower B, Flat 402", and click "Confirm".
+   - Select Vehicle Type (e.g., Sedan, SUV), package, vehicle model, registration number,
+     address, time slot, and click "Confirm Booking".
    - Show the new booking appearing in the list with status "PENDING" and "UNPAID".
-   - Click "Sign Out" in the top right.
+   - Click "Sign Out".
 
 3. STEP 2: ADMIN ASSIGNS A WASHER
    - Click "Sign In", click the purple "🛡️ Admin" button, click "Sign In".
-   - You are in the Admin Console. Show the Revenue, Bookings, and Users KPI cards!
    - In the Bookings table, locate the newly created booking.
    - Click "Assign Washer", pick "Speedy Washer (washer@carwash.com)", and confirm.
-   - Show the audit log tab: the assignment was logged in real-time!
+   - Show the Audit Logs tab: the assignment was logged in real-time!
    - Click "Sign Out".
 
 4. STEP 3: WASHER COMPLETES THE JOB
@@ -157,19 +162,15 @@ end-to-end lifecycle:
 5. STEP 4: CUSTOMER PAYS WITH RAZORPAY & LEAVES A REVIEW
    - Sign back in as "🚗 Customer".
    - In Customer Dashboard, the wash is marked "COMPLETED".
-   - Click "💳 Pay with Razorpay".
-   - The official Razorpay Checkout modal appears in test mode!
-   - Complete test payment: the booking instantly changes to "PAID" with a green badge!
-   - Click "⭐ Rate & Review": give 5 stars and submit feedback.
-   - Check the notification bell at the top right: notifications for booking,
-     washer assignment, and payment success are all logged!
+   - Click "💳 Pay with Razorpay" (official test mode modal pops up).
+   - Complete payment: the booking instantly changes to "PAID" with a green badge!
+   - Click "⭐ Rate & Review": submit 5 stars and comments.
+   - Check the notification bell at the top right: all real-time events logged!
 
 
 --------------------------------------------------------------------------------
-STEP 6: SERVICE PORTS & DIRECT SWAGGER URLS (For Technical Evaluation)
+STEP 7: SERVICE PORTS & DIRECT SWAGGER URLS
 --------------------------------------------------------------------------------
-If evaluators want to inspect the REST APIs or Swagger OpenAPI documentation:
-
 - Eureka Registry:       http://localhost:8761
 - User Service Swagger:   http://localhost:8081/swagger-ui/index.html
 - Admin Service Swagger:  http://localhost:8082/swagger-ui/index.html
@@ -177,20 +178,4 @@ If evaluators want to inspect the REST APIs or Swagger OpenAPI documentation:
 - Payment Service Swagger:http://localhost:8084/swagger-ui/index.html
 - Review Service Swagger: http://localhost:8085/swagger-ui/index.html
 - Notification Swagger:  http://localhost:8086/swagger-ui/index.html
-
-
---------------------------------------------------------------------------------
-STEP 7: SIMPLE TROUBLESHOOTING
---------------------------------------------------------------------------------
-Q: Port is already in use (e.g., port 8080 or 8081):
-   - Make sure no older instances or Docker containers are occupying the port.
-   - In cmd run: `netstat -ano | findstr :8080` then kill the PID with `taskkill /F /PID <PID>`.
-
-Q: Node/npm install gives permission errors on corporate laptop:
-   - Open Command Prompt as Administrator, or run `npm install --no-audit` inside
-     `Frontend\odc-frontend`.
-
-Q: How to run tests before presenting:
-   - In the root folder run: `mvn test`
-   - All 34 tests across all 8 microservices will run and report BUILD SUCCESS!
 ================================================================================

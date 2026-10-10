@@ -50,7 +50,7 @@ public class BookingServiceImpl implements BookingService {
                 .customerEmail(currentUser.getEmail())
                 .servicePackage(servicePackage)
                 .amount(servicePackage.getPrice()) // Authoritative amount derived directly from package
-                .vehicleType(request.getVehicleType())
+                .vehicleType(request.getVehicleType() != null && !request.getVehicleType().isBlank() ? request.getVehicleType() : "Sedan")
                 .vehicleNumber(request.getVehicleNumber().toUpperCase().trim())
                 .vehicleModel(request.getVehicleModel())
                 .serviceDate(request.getServiceDate())
