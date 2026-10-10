@@ -1,0 +1,196 @@
+================================================================================
+🚗✨ ON-DEMAND CAR WASH PLATFORM - SIMPLE STEP-BY-STEP STARTUP GUIDE
+================================================================================
+This guide is written in plain, simple English so that ANYONE can extract this
+project on any laptop and run the entire platform smoothly for demonstrations.
+================================================================================
+
+--------------------------------------------------------------------------------
+STEP 1: CHECK 3 PREREQUISITES (Takes 1 minute)
+--------------------------------------------------------------------------------
+Before starting, open "Command Prompt" (cmd) or PowerShell and verify you have:
+
+1. Java 21 (or later)
+   Type:   java -version
+   Check:  Should display version 21 (e.g., java version "21.0.6")
+
+2. Apache Maven (3.9+)
+   Type:   mvn -version
+   Check:  Should display Apache Maven 3.9.x
+
+3. Node.js & npm (v20 or v22)
+   Type:   node -v
+   Type:   npm -v
+   Check:  Should display v20.x or v22.x
+
+*NOTE: You DO NOT need to install or configure any database! All microservices
+come with a zero-config in-memory database (H2) that seeds sample data, default
+users, wash packages, and demo reviews automatically on startup.*
+
+
+--------------------------------------------------------------------------------
+STEP 2: HOW TO START THE PLATFORM (EASIEST 1-CLICK METHOD)
+--------------------------------------------------------------------------------
+In the extracted project folder, we have created two double-clickable scripts:
+
+1. Double-click "start-backend.bat"
+   - It will open separate terminal windows for all 8 microservices in the
+     correct order (Eureka Server first, then Gateway, then all services).
+   - Wait about 30-40 seconds for all services to start and register.
+
+2. Double-click "start-frontend.bat"
+   - It will install frontend dependencies if needed and start the Angular
+     server on http://localhost:4200.
+
+3. Open your browser and go to:
+   👉 http://localhost:4200
+
+
+--------------------------------------------------------------------------------
+STEP 3: ALTERNATIVE MANUAL STARTUP (If corporate laptop blocks .bat files)
+--------------------------------------------------------------------------------
+If your corporate laptop restricts double-clicking .bat files, simply open
+separate terminal/command prompt tabs and run these commands:
+
+[Terminal 1 - Service Registry]
+   cd eureka-server
+   mvn spring-boot:run
+   (Wait 10 seconds before starting the next)
+
+[Terminal 2 - API Gateway]
+   cd api-gateway
+   mvn spring-boot:run
+
+[Terminal 3 - User Service]
+   cd OnDemandCarWash-user-service
+   mvn spring-boot:run
+
+[Terminal 4 - Booking Service]
+   cd OnDemandCarWash-booking-service
+   mvn spring-boot:run
+
+[Terminal 5 - Payment Service]
+   cd OnDemandCarWash-payment-service
+   mvn spring-boot:run
+
+[Terminal 6 - Review Service]
+   cd OnDemandCarWash-review-service
+   mvn spring-boot:run
+
+[Terminal 7 - Notification Service]
+   cd OnDemandCarWash-notification-service
+   mvn spring-boot:run
+
+[Terminal 8 - Admin Service]
+   cd adminservice
+   mvn spring-boot:run
+
+[Terminal 9 - Frontend Web App]
+   cd Frontend\odc-frontend
+   npm install
+   npm start
+   (Then open http://localhost:4200)
+
+
+--------------------------------------------------------------------------------
+STEP 4: PRE-CONFIGURED TEST ACCOUNTS (Instant 1-Click Login)
+--------------------------------------------------------------------------------
+The login screen has 4 colored "Quick-Fill" buttons at the top. Clicking any
+button automatically fills in the email and password for that role:
+
+1. 👑 Super Admin (GOD Account):
+   - Email:     god@carwash.com
+   - Password:  GodAdmin@2026!
+   - Can: View revenue, assign washers, promote/demote users.
+   - Special Rule: Cannot be blocked, deleted, or demoted by anyone!
+
+2. 🛡️ Platform Admin:
+   - Email:     admin@carwash.com
+   - Password:  Admin@123
+   - Can: Manage bookings, assign washers to bookings, view audit logs.
+
+3. 🧽 Certified Washer:
+   - Email:     washer@carwash.com
+   - Password:  Washer@123
+   - Can: View assigned wash jobs, click "Start Wash", click "Complete Wash".
+
+4. 🚗 Customer:
+   - Email:     customer@carwash.com
+   - Password:  Customer@123
+   - Can: Book washes, pay online via Razorpay, rate & review washers.
+
+
+--------------------------------------------------------------------------------
+STEP 5: RECOMMENDED PRESENTATION DEMO FLOW (Follow this for your demo!)
+--------------------------------------------------------------------------------
+To give a presentation to your team or evaluators, show this
+end-to-end lifecycle:
+
+1. SHOW THE LANDING PAGE (http://localhost:4200)
+   - Show the hero banner, 4 packages (Express ₹399, Interior ₹799, Full Premium
+     ₹1499, Ceramic Pro ₹2999), 3-step workflow, and verified reviews.
+
+2. STEP 1: CUSTOMER BOOKS A WASH
+   - Click "Sign In", click the blue "🚗 Customer" button, click "Sign In".
+   - You are now on the Customer Dashboard.
+   - Click "➕ Book a Car Wash".
+   - Select package "Full Premium Detailing", enter vehicle "Honda City",
+     plate "KA01AB1234", address "Tower B, Flat 402", and click "Confirm".
+   - Show the new booking appearing in the list with status "PENDING" and "UNPAID".
+   - Click "Sign Out" in the top right.
+
+3. STEP 2: ADMIN ASSIGNS A WASHER
+   - Click "Sign In", click the purple "🛡️ Admin" button, click "Sign In".
+   - You are in the Admin Console. Show the Revenue, Bookings, and Users KPI cards!
+   - In the Bookings table, locate the newly created booking.
+   - Click "Assign Washer", pick "Speedy Washer (washer@carwash.com)", and confirm.
+   - Show the audit log tab: the assignment was logged in real-time!
+   - Click "Sign Out".
+
+4. STEP 3: WASHER COMPLETES THE JOB
+   - Click "Sign In", click the teal "🧽 Washer" button, click "Sign In".
+   - In the Washer Station, you will see the assigned job with customer details.
+   - Click "▶ Start Wash" (status changes to IN_PROGRESS).
+   - Click "✔ Complete Wash" (status changes to COMPLETED).
+   - Click "Sign Out".
+
+5. STEP 4: CUSTOMER PAYS WITH RAZORPAY & LEAVES A REVIEW
+   - Sign back in as "🚗 Customer".
+   - In Customer Dashboard, the wash is marked "COMPLETED".
+   - Click "💳 Pay with Razorpay".
+   - The official Razorpay Checkout modal appears in test mode!
+   - Complete test payment: the booking instantly changes to "PAID" with a green badge!
+   - Click "⭐ Rate & Review": give 5 stars and submit feedback.
+   - Check the notification bell at the top right: notifications for booking,
+     washer assignment, and payment success are all logged!
+
+
+--------------------------------------------------------------------------------
+STEP 6: SERVICE PORTS & DIRECT SWAGGER URLS (For Technical Evaluation)
+--------------------------------------------------------------------------------
+If evaluators want to inspect the REST APIs or Swagger OpenAPI documentation:
+
+- Eureka Registry:       http://localhost:8761
+- User Service Swagger:   http://localhost:8081/swagger-ui/index.html
+- Admin Service Swagger:  http://localhost:8082/swagger-ui/index.html
+- Booking Service Swagger:http://localhost:8083/swagger-ui/index.html
+- Payment Service Swagger:http://localhost:8084/swagger-ui/index.html
+- Review Service Swagger: http://localhost:8085/swagger-ui/index.html
+- Notification Swagger:  http://localhost:8086/swagger-ui/index.html
+
+
+--------------------------------------------------------------------------------
+STEP 7: SIMPLE TROUBLESHOOTING
+--------------------------------------------------------------------------------
+Q: Port is already in use (e.g., port 8080 or 8081):
+   - Make sure no older instances or Docker containers are occupying the port.
+   - In cmd run: `netstat -ano | findstr :8080` then kill the PID with `taskkill /F /PID <PID>`.
+
+Q: Node/npm install gives permission errors on corporate laptop:
+   - Open Command Prompt as Administrator, or run `npm install --no-audit` inside
+     `Frontend\odc-frontend`.
+
+Q: How to run tests before presenting:
+   - In the root folder run: `mvn test`
+   - All 34 tests across all 8 microservices will run and report BUILD SUCCESS!
+================================================================================

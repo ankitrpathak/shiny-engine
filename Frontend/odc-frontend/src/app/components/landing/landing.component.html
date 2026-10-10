@@ -1,0 +1,152 @@
+<div class="landing-page">
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="container hero-container">
+      <div class="hero-content">
+        <span class="hero-pill">⚡ Premium On-Demand Car Care</span>
+        <h1 class="hero-title">
+          Showroom Clean, <br />
+          <span class="gradient-text">Delivered to Your Doorstep</span>
+        </h1>
+        <p class="hero-subtitle">
+          Say goodbye to queues and wasted weekends. Book professional doorstep car washing, interior detailing, and ceramic protection in under 60 seconds.
+        </p>
+        <div class="hero-actions">
+          <a routerLink="/register" class="btn btn-hero">Book Wash Now</a>
+          <a href="#packages" class="btn btn-hero-secondary">View Packages</a>
+        </div>
+        <div class="hero-stats">
+          <div class="stat-item">
+            <strong>4.9 ★</strong>
+            <span>Customer Rating</span>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat-item">
+            <strong>10,000+</strong>
+            <span>Cars Washed</span>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat-item">
+            <strong>100%</strong>
+            <span>Verified Washers</span>
+          </div>
+        </div>
+      </div>
+      <div class="hero-graphic">
+        <div class="car-card">
+          <div class="car-badge">Eco Friendly</div>
+          <div class="car-icon">🚘✨</div>
+          <h3>Professional Mobile Unit</h3>
+          <p>Equipped with high-pressure washers, steam cleaners, and eco-certified detailing chemicals.</p>
+          <div class="car-meta">
+            <span>⏱️ 30-90 Mins</span>
+            <span>📍 Doorstep Service</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works Section -->
+  <section class="how-section">
+    <div class="container">
+      <div class="section-header">
+        <h2>How It Works</h2>
+        <p>Three effortless steps to a sparkling clean car.</p>
+      </div>
+      <div class="steps-grid">
+        <div class="step-card">
+          <div class="step-num">1</div>
+          <h3>Select Package & Slot</h3>
+          <p>Choose your car wash package, enter your location, and pick a convenient date & time slot.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">2</div>
+          <h3>Certified Washer Arrives</h3>
+          <p>Our background-verified professional brings all necessary water and equipment right to your car.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">3</div>
+          <h3>Inspect, Pay & Rate</h3>
+          <p>Review the gleaming result, pay securely online via Razorpay, and leave your verified review.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Packages Section -->
+  <section id="packages" class="packages-section">
+    <div class="container">
+      <div class="section-header">
+        <h2>Wash Packages & Pricing</h2>
+        <p>Transparent pricing with zero hidden charges.</p>
+      </div>
+      <div class="packages-grid">
+        <div *ngFor="let pkg of packages" class="pkg-card" [class.popular]="pkg.id === 3">
+          <div *ngIf="pkg.id === 3" class="popular-badge">Most Popular</div>
+          <div class="pkg-header">
+            <h3>{{ pkg.title }}</h3>
+            <p class="pkg-desc">{{ pkg.description }}</p>
+          </div>
+          <div class="pkg-price">
+            <span class="currency">₹</span>
+            <span class="amount">{{ pkg.price }}</span>
+            <span class="duration">/ {{ pkg.durationMinutes }} mins</span>
+          </div>
+          <div class="pkg-features">
+            <div class="feature-item">✔ Eco foam wash & rinse</div>
+            <div class="feature-item">✔ High-pressure wheel & rim scrub</div>
+            <div class="feature-item" *ngIf="pkg.id >= 2">✔ Interior deep vacuum & dash wipe</div>
+            <div class="feature-item" *ngIf="pkg.id >= 3">✔ Wax shine & tire dressing</div>
+            <div class="feature-item" *ngIf="pkg.id === 4">✔ Hydrophobic ceramic sealant</div>
+          </div>
+          <button (click)="onSelectPackage(pkg)" class="btn btn-pkg">Select This Wash</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials Section -->
+  <section class="reviews-section" *ngIf="reviews.length > 0">
+    <div class="container">
+      <div class="section-header">
+        <h2>What Our Customers Say</h2>
+        <p>Real feedback from car owners across the city.</p>
+      </div>
+      <div class="reviews-grid">
+        <div *ngFor="let rev of reviews" class="review-card">
+          <div class="rating-stars">
+            <span *ngFor="let star of [1,2,3,4,5]" [class.filled]="star <= rev.rating">★</span>
+          </div>
+          <p class="review-comment">"{{ rev.comment }}"</p>
+          <div class="reviewer-meta">
+            <span class="reviewer-email">{{ rev.customerEmail }}</span>
+            <span class="review-date">{{ rev.createdAt | date: 'mediumDate' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container footer-container">
+      <div class="footer-brand">
+        <span class="brand-icon">🚗✨</span>
+        <span class="brand-text">SparkleWash</span>
+        <p>Your on-demand car care partner. Built with Spring Boot 3 & Angular 18.</p>
+      </div>
+      <div class="footer-links">
+        <h4>Platform Roles</h4>
+        <ul>
+          <li><a routerLink="/login">Customer Portal</a></li>
+          <li><a routerLink="/login">Washer Station</a></li>
+          <li><a routerLink="/login">Administrator Console</a></li>
+        </ul>
+      </div>
+      <div class="footer-copy">
+        <p>© 2026 SparkleWash Platform. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+</div>

@@ -1,0 +1,116 @@
+<div class="washer-page">
+  <div class="container">
+    <div class="dash-header">
+      <div>
+        <h1>Washer Service Station</h1>
+        <p>Manage your assigned car wash jobs, navigation, and completion status</p>
+      </div>
+      <div class="washer-badge">
+        <span>⭐ Rating: {{ averageRating }} / 5.0</span>
+      </div>
+    </div>
+
+    <!-- Alert Banner -->
+    <div *ngIf="alertMessage" class="alert-banner" [class.success]="alertType === 'success'" [class.error]="alertType === 'error'">
+      {{ alertMessage }}
+    </div>
+
+    <!-- KPI Summary Grid -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <span class="kpi-title">Assigned Queue</span>
+        <span class="kpi-num">{{ assignedCount }}</span>
+      </div>
+      <div class="kpi-card in-progress">
+        <span class="kpi-title">In Progress</span>
+        <span class="kpi-num">{{ inProgressCount }}</span>
+      </div>
+      <div class="kpi-card completed">
+        <span class="kpi-title">Completed Washes</span>
+        <span class="kpi-num">{{ completedCount }}</span>
+      </div>
+      <div class="kpi-card rating">
+        <span class="kpi-title">Reviews Received</span>
+        <span class="kpi-num">{{ reviews.length }}</span>
+      </div>
+    </div>
+
+    <!-- Job Queue Section -->
+    <div class="jobs-section">
+      <h2>Assigned Jobs</h2>
+
+      <div *ngIf="loading" class="loading-state">
+        Loading your assigned jobs...
+      </div>
+
+      <div *ngIf="!loading && assignments.length === 0" class="empty-state">
+        <div class="empty-icon">🧽✨</div>
+        <h3>No jobs currently assigned</h3>
+        <p>New customer wash bookings dispatched by admin will appear here automatically.</p>
+      </div>
+
+      <div *ngIf="!loading && assignments.length > 0" class="jobs-grid">
+        <div *ngFor="let job of assignments" class="job-card" [class.active-wash]="job.status === 'IN_PROGRESS'">
+          <div class="job-header">
+            <div>
+              <h3>{{ job.packageTitle }}</h3>
+              <span class="job-id">Job #{{ job.id }}</span>
+            </div>
+            <span class="status-badge" [ngClass]="job.status.toLowerCase()">
+              {{ job.status }}
+            </span>
+          </div>
+
+          <div class="job-body">
+            <div class="job-field">
+              <span class="label">👤 Customer:</span>
+              <span class="val">{{ job.customerName }} (📞 {{ job.customerPhone }})</span>
+            </div>
+            <div class="job-field">
+              <span class="label">🚘 Vehicle:</span>
+              <span class="val">{{ job.vehicleModel }} • {{ job.vehicleNumber }}</span>
+            </div>
+            <div class="job-field">
+              <span class="label">📍 Address:</span>
+              <span class="val">{{ job.address }}, {{ job.city }}</span>
+            </div>
+            <div class="job-field">
+              <span class="label">⏰ Time Slot:</span>
+              <span class="val">{{ job.serviceDate }} ({{ job.serviceTimeSlot }})</span>
+            </div>
+            <div class="job-field">
+              <span class="label">💳 Payment:</span>
+              <span class="val" [class.paid-text]="job.paid">{{ job.paid ? 'PAID ONLINE' : 'COLLECT AT LOCATION' }}</span>
+            </div>
+          </div>
+
+          <!-- Washer Action Buttons -->
+          <div class="job-actions">
+            <!-- Start Wash Button -->
+            <button
+              *ngIf="job.status === 'ASSIGNED'"
+              (click)="updateStatus(job, 'IN_PROGRESS')"
+              class="btn btn-start"
+            >
+              ▶ Start Wash (In Progress)
+            </button>
+
+            <!-- Complete Wash Button -->
+            <button
+              *ngIf="job.status === 'IN_PROGRESS'"
+              (click)="updateStatus(job, 'COMPLETED')"
+              class="btn btn-complete"
+            >
+              ✔ Complete Wash
+            </button>
+
+            <!-- Completed state -->
+            <span *ngIf="job.status === 'COMPLETED'" class="completed-msg">
+              ✅ Wash Completed Successfully
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

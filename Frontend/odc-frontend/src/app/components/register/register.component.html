@@ -1,0 +1,66 @@
+<div class="auth-wrapper">
+  <div class="auth-card">
+    <div class="auth-header">
+      <span class="auth-icon">🚀</span>
+      <h2>Create Your Account</h2>
+      <p>Join SparkleWash for effortless mobile car care</p>
+    </div>
+
+    <div *ngIf="errorMessage" class="error-banner">
+      {{ errorMessage }}
+    </div>
+
+    <form (ngSubmit)="onSubmit()" class="auth-form">
+      <div class="role-selector">
+        <label class="role-option" [class.selected]="role === 'CUSTOMER'">
+          <input type="radio" name="role" [(ngModel)]="role" value="CUSTOMER" />
+          <span>🚗 I'm a Customer</span>
+        </label>
+        <label class="role-option" [class.selected]="role === 'WASHER'">
+          <input type="radio" name="role" [(ngModel)]="role" value="WASHER" />
+          <span>🧽 I'm a Washer</span>
+        </label>
+      </div>
+
+      <div class="form-group">
+        <label for="fullName">Full Name *</label>
+        <input type="text" id="fullName" [(ngModel)]="fullName" name="fullName" placeholder="Ankit Sharma" required />
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email Address *</label>
+        <input type="email" id="email" [(ngModel)]="email" name="email" placeholder="ankit@example.com" required />
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="phone">Phone Number *</label>
+          <input type="tel" id="phone" [(ngModel)]="phone" name="phone" placeholder="9876543210" required />
+        </div>
+        <div class="form-group">
+          <label for="city">City</label>
+          <input type="text" id="city" [(ngModel)]="city" name="city" placeholder="Bangalore" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="address">Address</label>
+        <input type="text" id="address" [(ngModel)]="address" name="address" placeholder="Flat 402, Green Valley Apartments" />
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password *</label>
+        <input type="password" id="password" [(ngModel)]="password" name="password" placeholder="Minimum 6 characters" required />
+      </div>
+
+      <button type="submit" [disabled]="loading" class="btn btn-submit">
+        <span *ngIf="!loading">Create Account</span>
+        <span *ngIf="loading">Creating account...</span>
+      </button>
+    </form>
+
+    <div class="auth-footer">
+      <p>Already have an account? <a routerLink="/login">Sign In</a></p>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,268 @@
+<div class="admin-page">
+  <div class="container">
+    <div class="dash-header">
+      <div>
+        <div class="header-tag">
+          <span *ngIf="authService.isGod()" class="god-tag">👑 SUPER ADMIN CONSOLE</span>
+          <span *ngIf="!authService.isGod()" class="admin-tag">🛡️ ADMIN CONSOLE</span>
+        </div>
+        <h1>Platform Operations</h1>
+        <p>Aggregated real-time metrics, booking dispatching, user privileges, and system audit logs</p>
+      </div>
+    </div>
+
+    <!-- Alert Banner -->
+    <div *ngIf="alertMessage" class="alert-banner" [class.success]="alertType === 'success'" [class.error]="alertType === 'error'">
+      {{ alertMessage }}
+    </div>
+
+    <!-- Metric KPI Cards -->
+    <div class="metrics-grid">
+      <div class="metric-card revenue">
+        <span class="m-label">Platform Revenue</span>
+        <span class="m-val">₹{{ stats.totalRevenue || 0 }}</span>
+        <span class="m-sub">{{ stats.successfulPaymentsCount }} successful transactions</span>
+      </div>
+
+      <div class="metric-card bookings">
+        <span class="m-label">Total Bookings</span>
+        <span class="m-val">{{ stats.totalBookings }}</span>
+        <span class="m-sub">{{ stats.inProgressBookings }} active • {{ stats.completedBookings }} completed</span>
+      </div>
+
+      <div class="metric-card users">
+        <span class="m-label">Platform Users</span>
+        <span class="m-val">{{ stats.totalUsers }}</span>
+        <span class="m-sub">{{ stats.totalCustomers }} customers • {{ stats.totalWashers }} washers</span>
+      </div>
+
+      <div class="metric-card rating">
+        <span class="m-label">Avg. Service Rating</span>
+        <span class="m-val">{{ stats.averageRating }} ★</span>
+        <span class="m-sub">{{ stats.totalReviews }} verified reviews</span>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="tab-bar">
+      <button (click)="activeTab = 'bookings'" [class.active]="activeTab === 'bookings'" class="tab-btn">
+        📋 Bookings & Assignments ({{ bookings.length }})
+      </button>
+      <button (click)="activeTab = 'users'" [class.active]="activeTab === 'users'" class="tab-btn">
+        👥 Users & Privileges ({{ users.length }})
+      </button>
+      <button (click)="activeTab = 'audit'" [class.active]="activeTab === 'audit'" class="tab-btn">
+        📜 Security & Audit Trail ({{ auditLogs.length }})
+      </button>
+    </div>
+
+    <!-- TAB 1: BOOKINGS -->
+    <div *ngIf="activeTab === 'bookings'" class="tab-content">
+      <div class="table-card">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Customer</th>
+              <th>Package</th>
+              <th>Vehicle</th>
+              <th>Scheduled For</th>
+              <th>Amount</th>
+              <th>Status</th>
+              <th>Payment</th>
+              <th>Assigned Washer</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let b of bookings">
+              <td><strong>#{{ b.id }}</strong></td>
+              <td>
+                <div class="cell-user">{{ b.customerName }}</div>
+                <div class="cell-sub">{{ b.customerEmail }}</div>
+              </td>
+              <td>{{ b.packageTitle }}</td>
+              <td>{{ b.vehicleModel }} ({{ b.vehicleNumber }})</td>
+              <td>{{ b.serviceDate }} <br /><small>{{ b.serviceTimeSlot }}</small></td>
+              <td><strong>₹{{ b.amount }}</strong></td>
+              <td>
+                <span class="status-badge" [ngClass]="b.status.toLowerCase()">
+                  {{ b.status }}
+                </span>
+              </td>
+              <td>
+                <span class="paid-badge" [class.paid]="b.paid" [class.unpaid]="!b.paid">
+                  {{ b.paid ? 'PAID' : 'UNPAID' }}
+                </span>
+              </td>
+              <td>
+                <span *ngIf="b.washerName" class="assigned-washer">🧽 {{ b.washerName }}</span>
+                <span *ngIf="!b.washerName" class="unassigned-text">Unassigned</span>
+              </td>
+              <td>
+                <button
+                  *ngIf="b.status !== 'COMPLETED' && b.status !== 'CANCELLED'"
+                  (click)="openAssignModal(b)"
+                  class="btn btn-sm btn-assign"
+                >
+                  {{ b.washerName ? 'Reassign' : 'Assign Washer' }}
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB 2: USERS -->
+    <div *ngIf="activeTab === 'users'" class="tab-content">
+      <div class="table-card">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>User</th>
+              <th>Phone</th>
+              <th>Role</th>
+              <th>Status</th>
+              <th>Joined</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let u of users">
+              <td><strong>#{{ u.id }}</strong></td>
+              <td>
+                <div class="cell-user">
+                  {{ u.fullName }}
+                  <span *ngIf="u.role === 'GOD'" class="god-crown" title="Protected Root Super-Admin">👑 IMMUTABLE</span>
+                </div>
+                <div class="cell-sub">{{ u.email }}</div>
+              </td>
+              <td>{{ u.phone }}</td>
+              <td>
+                <span class="role-badge" [ngClass]="u.role.toLowerCase()">
+                  {{ u.role }}
+                </span>
+              </td>
+              <td>
+                <span class="status-badge" [class.active-user]="u.active" [class.blocked-user]="!u.active">
+                  {{ u.active ? 'ACTIVE' : 'BLOCKED' }}
+                </span>
+              </td>
+              <td>{{ u.createdAt | date: 'shortDate' }}</td>
+              <td>
+                <div class="action-buttons" *ngIf="u.role !== 'GOD'">
+                  <!-- Block/Activate -->
+                  <button
+                    (click)="toggleBlockUser(u)"
+                    class="btn btn-sm"
+                    [class.btn-danger]="u.active"
+                    [class.btn-success]="!u.active"
+                  >
+                    {{ u.active ? 'Block' : 'Activate' }}
+                  </button>
+
+                  <!-- Promote to Admin -->
+                  <button
+                    *ngIf="u.role !== 'ADMIN'"
+                    (click)="promoteToAdmin(u)"
+                    class="btn btn-sm btn-outline"
+                    title="Promote to Admin"
+                  >
+                    +Admin
+                  </button>
+
+                  <!-- Promote to Washer -->
+                  <button
+                    *ngIf="u.role === 'CUSTOMER'"
+                    (click)="promoteToWasher(u)"
+                    class="btn btn-sm btn-outline"
+                    title="Promote to Washer"
+                  >
+                    +Washer
+                  </button>
+
+                  <!-- Demote to Customer (GOD only) -->
+                  <button
+                    *ngIf="authService.isGod() && u.role !== 'CUSTOMER'"
+                    (click)="demoteToCustomer(u)"
+                    class="btn btn-sm btn-warning"
+                    title="Demote to Customer"
+                  >
+                    Demote
+                  </button>
+                </div>
+                <span *ngIf="u.role === 'GOD'" class="protected-text">Protected Account</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB 3: AUDIT LOGS -->
+    <div *ngIf="activeTab === 'audit'" class="tab-content">
+      <div class="table-card">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Timestamp</th>
+              <th>Admin</th>
+              <th>Action Type</th>
+              <th>Target Resource</th>
+              <th>Details</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let log of auditLogs">
+              <td>{{ log.performedAt | date: 'medium' }}</td>
+              <td><strong>{{ log.adminEmail }}</strong></td>
+              <td><span class="action-badge">{{ log.actionType }}</span></td>
+              <td>{{ log.targetResource }} #{{ log.targetId }}</td>
+              <td class="log-details">{{ log.details }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Washer Assignment Modal -->
+  <div *ngIf="showAssignModal" class="modal-backdrop">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Assign Washer to Booking #{{ selectedBooking?.id }}</h3>
+        <button (click)="closeAssignModal()" class="close-btn">&times;</button>
+      </div>
+
+      <div class="modal-form">
+        <p><strong>Package:</strong> {{ selectedBooking?.packageTitle }}</p>
+        <p><strong>Customer:</strong> {{ selectedBooking?.customerName }} ({{ selectedBooking?.address }})</p>
+        <p><strong>Schedule:</strong> {{ selectedBooking?.serviceDate }} at {{ selectedBooking?.serviceTimeSlot }}</p>
+
+        <div class="form-group">
+          <label for="washerSelect">Select Available Washer *</label>
+          <select id="washerSelect" [(ngModel)]="selectedWasherId">
+            <option *ngFor="let w of washers" [value]="w.id">
+              {{ w.fullName }} ({{ w.email }})
+            </option>
+          </select>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" (click)="closeAssignModal()" class="btn btn-secondary">Cancel</button>
+          <button
+            type="button"
+            (click)="submitAssign()"
+            [disabled]="assignSubmitting || !selectedWasherId"
+            class="btn btn-primary"
+          >
+            <span *ngIf="!assignSubmitting">Confirm Assignment</span>
+            <span *ngIf="assignSubmitting">Assigning...</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,60 @@
+<div class="auth-wrapper">
+  <div class="auth-card">
+    <div class="auth-header">
+      <span class="auth-icon">🔐</span>
+      <h2>Welcome Back</h2>
+      <p>Log in to access your car wash account</p>
+    </div>
+
+    <!-- Error Banner -->
+    <div *ngIf="errorMessage" class="error-banner">
+      {{ errorMessage }}
+    </div>
+
+    <!-- Demo Quick-Fill Buttons -->
+    <div class="quick-fill-section">
+      <span class="quick-label">⚡ Click to auto-fill test account:</span>
+      <div class="quick-buttons">
+        <button type="button" (click)="quickFill('god')" class="quick-btn god">👑 God Admin</button>
+        <button type="button" (click)="quickFill('admin')" class="quick-btn admin">🛡️ Admin</button>
+        <button type="button" (click)="quickFill('washer')" class="quick-btn washer">🧽 Washer</button>
+        <button type="button" (click)="quickFill('customer')" class="quick-btn customer">🚗 Customer</button>
+      </div>
+    </div>
+
+    <form (ngSubmit)="onSubmit()" class="auth-form">
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <input
+          type="email"
+          id="email"
+          [(ngModel)]="email"
+          name="email"
+          placeholder="your.email@carwash.com"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input
+          type="password"
+          id="password"
+          [(ngModel)]="password"
+          name="password"
+          placeholder="••••••••"
+          required
+        />
+      </div>
+
+      <button type="submit" [disabled]="loading" class="btn btn-submit">
+        <span *ngIf="!loading">Sign In</span>
+        <span *ngIf="loading">Signing in...</span>
+      </button>
+    </form>
+
+    <div class="auth-footer">
+      <p>Don't have an account? <a routerLink="/register">Register here</a></p>
+    </div>
+  </div>
+</div>

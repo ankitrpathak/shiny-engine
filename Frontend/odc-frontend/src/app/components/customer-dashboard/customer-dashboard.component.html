@@ -1,0 +1,229 @@
+<div class="dashboard-page">
+  <div class="container">
+    <!-- Header -->
+    <div class="dash-header">
+      <div>
+        <h1>Customer Dashboard</h1>
+        <p>Manage your car washes, schedule new slots, and track payments</p>
+      </div>
+      <button (click)="openNewBooking()" class="btn btn-primary">
+        ➕ Book a Car Wash
+      </button>
+    </div>
+
+    <!-- Alert Banner -->
+    <div *ngIf="alertMessage" class="alert-banner" [class.success]="alertType === 'success'" [class.error]="alertType === 'error'">
+      {{ alertMessage }}
+    </div>
+
+    <!-- Bookings List -->
+    <div class="bookings-section">
+      <h2>My Car Washes</h2>
+
+      <div *ngIf="loading" class="loading-state">
+        Loading your bookings...
+      </div>
+
+      <div *ngIf="!loading && bookings.length === 0" class="empty-state">
+        <div class="empty-icon">🚗💧</div>
+        <h3>No bookings yet</h3>
+        <p>Schedule your first doorstep wash in under 60 seconds!</p>
+        <button (click)="openNewBooking()" class="btn btn-primary">Book Now</button>
+      </div>
+
+      <div *ngIf="!loading && bookings.length > 0" class="bookings-grid">
+        <div *ngFor="let b of bookings" class="booking-card">
+          <div class="b-top">
+            <div class="b-pkg">
+              <h3>{{ b.packageTitle }}</h3>
+              <span class="b-id">Booking #{{ b.id }}</span>
+            </div>
+            <div class="b-status-badges">
+              <span class="status-badge" [ngClass]="b.status.toLowerCase()">
+                {{ b.status }}
+              </span>
+              <span class="paid-badge" [class.paid]="b.paid" [class.unpaid]="!b.paid">
+                {{ b.paid ? 'PAID' : 'UNPAID' }}
+              </span>
+            </div>
+          </div>
+
+          <div class="b-details">
+            <div class="detail-row">
+              <span class="label">🚘 Vehicle:</span>
+              <span class="val">{{ b.vehicleModel }} ({{ b.vehicleNumber }})</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">📅 Schedule:</span>
+              <span class="val">{{ b.serviceDate }} • {{ b.serviceTimeSlot }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">📍 Location:</span>
+              <span class="val">{{ b.address }}, {{ b.city }}</span>
+            </div>
+            <div class="detail-row" *ngIf="b.washerName">
+              <span class="label">🧽 Assigned Washer:</span>
+              <span class="val washer-val">{{ b.washerName }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">💰 Total Amount:</span>
+              <span class="val price-val">₹{{ b.amount }}</span>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="b-actions">
+            <!-- Razorpay Pay Button -->
+            <button
+              *ngIf="!b.paid && b.status !== 'CANCELLED'"
+              (click)="payNow(b)"
+              [disabled]="paymentProcessing"
+              class="btn btn-pay"
+            >
+              💳 Pay ₹{{ b.amount }} with Razorpay
+            </button>
+
+            <!-- Leave Review Button -->
+            <button
+              *ngIf="b.status === 'COMPLETED'"
+              (click)="openReview(b)"
+              class="btn btn-review"
+            >
+              ⭐ Rate & Review
+            </button>
+
+            <!-- Cancel Button -->
+            <button
+              *ngIf="b.status === 'PENDING'"
+              (click)="cancelBooking(b)"
+              class="btn btn-cancel"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- New Booking Modal -->
+  <div *ngIf="showBookingModal" class="modal-backdrop">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Book Doorstep Car Wash</h3>
+        <button (click)="closeBookingModal()" class="close-btn">&times;</button>
+      </div>
+
+      <form (ngSubmit)="submitBooking()" class="modal-form">
+        <div class="form-group">
+          <label for="pkgSelect">Wash Package *</label>
+          <select id="pkgSelect" [(ngModel)]="bookingForm.packageId" name="packageId" required>
+            <option *ngFor="let p of packages" [value]="p.id">
+              {{ p.title }} — ₹{{ p.price }} ({{ p.durationMinutes }} mins)
+            </option>
+          </select>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="vModel">Vehicle Model *</label>
+            <input type="text" id="vModel" [(ngModel)]="bookingForm.vehicleModel" name="vehicleModel" placeholder="e.g. Honda City" required />
+          </div>
+          <div class="form-group">
+            <label for="vNumber">Registration Number *</label>
+            <input type="text" id="vNumber" [(ngModel)]="bookingForm.vehicleNumber" name="vehicleNumber" placeholder="e.g. KA01AB1234" required />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="sDate">Service Date *</label>
+            <input type="date" id="sDate" [(ngModel)]="bookingForm.serviceDate" name="serviceDate" required />
+          </div>
+          <div class="form-group">
+            <label for="sTime">Time Slot *</label>
+            <select id="sTime" [(ngModel)]="bookingForm.serviceTimeSlot" name="serviceTimeSlot" required>
+              <option value="09:00 - 10:30">09:00 - 10:30 AM</option>
+              <option value="11:00 - 12:30">11:00 - 12:30 PM</option>
+              <option value="14:00 - 15:30">02:00 - 03:30 PM</option>
+              <option value="16:00 - 17:30">04:00 - 05:30 PM</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="sAddress">Address *</label>
+          <input type="text" id="sAddress" [(ngModel)]="bookingForm.address" name="address" placeholder="Apartment / Villa, Street, Landmark" required />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="sCity">City</label>
+            <input type="text" id="sCity" [(ngModel)]="bookingForm.city" name="city" placeholder="Bangalore" />
+          </div>
+          <div class="form-group">
+            <label for="sNotes">Special Notes</label>
+            <input type="text" id="sNotes" [(ngModel)]="bookingForm.notes" name="notes" placeholder="e.g. Parked in Basement B2" />
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" (click)="closeBookingModal()" class="btn btn-secondary">Cancel</button>
+          <button type="submit" [disabled]="bookingSubmitting" class="btn btn-primary">
+            <span *ngIf="!bookingSubmitting">Confirm Booking</span>
+            <span *ngIf="bookingSubmitting">Scheduling...</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Review Modal -->
+  <div *ngIf="showReviewModal" class="modal-backdrop">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Rate Your Car Wash</h3>
+        <button (click)="closeReviewModal()" class="close-btn">&times;</button>
+      </div>
+
+      <div class="modal-form">
+        <p>Booking #{{ selectedBookingForReview?.id }} • {{ selectedBookingForReview?.packageTitle }}</p>
+
+        <div class="rating-picker">
+          <span
+            *ngFor="let star of [1, 2, 3, 4, 5]"
+            (click)="reviewRating = star"
+            class="star-btn"
+            [class.active]="star <= reviewRating"
+          >
+            ★
+          </span>
+          <span class="rating-label">{{ reviewRating }} / 5 Stars</span>
+        </div>
+
+        <div class="form-group">
+          <label for="revComment">Feedback & Comments</label>
+          <textarea
+            id="revComment"
+            [(ngModel)]="reviewComment"
+            rows="3"
+            placeholder="How was the cleaning quality, washer punctuality, and overall shine?"
+          ></textarea>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" (click)="closeReviewModal()" class="btn btn-secondary">Cancel</button>
+          <button
+            type="button"
+            (click)="submitReview()"
+            [disabled]="reviewSubmitting"
+            class="btn btn-primary"
+          >
+            <span *ngIf="!reviewSubmitting">Submit Review</span>
+            <span *ngIf="reviewSubmitting">Submitting...</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

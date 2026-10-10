@@ -1,0 +1,78 @@
+<nav class="navbar">
+  <div class="nav-container">
+    <a routerLink="/" class="nav-brand">
+      <span class="brand-icon">🚗✨</span>
+      <span class="brand-text">SparkleWash</span>
+    </a>
+
+    <div class="nav-links">
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-item">Home</a>
+
+      <!-- Customer Links -->
+      <ng-container *ngIf="authService.isCustomer()">
+        <a routerLink="/dashboard" routerLinkActive="active" class="nav-item">My Dashboard</a>
+      </ng-container>
+
+      <!-- Washer Links -->
+      <ng-container *ngIf="authService.isWasher()">
+        <a routerLink="/washer" routerLinkActive="active" class="nav-item">Washer Station</a>
+      </ng-container>
+
+      <!-- Admin Links -->
+      <ng-container *ngIf="authService.isAdmin()">
+        <a routerLink="/admin" routerLinkActive="active" class="nav-item admin-link">Admin Console</a>
+      </ng-container>
+    </div>
+
+    <div class="nav-actions">
+      <!-- When Logged In -->
+      <ng-container *ngIf="authService.isLoggedIn(); else guestActions">
+        <!-- Notification Bell Icon -->
+        <div class="notification-wrapper">
+          <button class="icon-btn" (click)="toggleNotifications()" title="Notifications">
+            🔔
+            <span *ngIf="unreadCount > 0" class="badge">{{ unreadCount }}</span>
+          </button>
+
+          <!-- Notification Dropdown -->
+          <div *ngIf="showNotifications" class="notification-dropdown">
+            <div class="notif-header">
+              <h4>Notifications ({{ unreadCount }} unread)</h4>
+              <button (click)="markAllAsRead()" class="text-btn">Mark All Read</button>
+            </div>
+            <div class="notif-list">
+              <div *ngIf="notifications.length === 0" class="empty-notif">
+                No notifications
+              </div>
+              <div
+                *ngFor="let n of notifications"
+                class="notif-item"
+                [class.unread]="n.status === 'UNREAD'"
+                (click)="markAsRead(n)"
+              >
+                <div class="notif-item-title">{{ n.title }}</div>
+                <div class="notif-item-msg">{{ n.message }}</div>
+                <div class="notif-item-time">{{ n.createdAt | date: 'short' }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- User Info Pill -->
+        <div class="user-pill">
+          <span class="role-badge" [class.god]="authService.isGod()" [class.admin]="authService.isAdmin() && !authService.isGod()" [class.washer]="authService.isWasher()">
+            {{ authService.getRole() }}
+          </span>
+          <span class="user-name">{{ authService.getCurrentUser()?.fullName || authService.getCurrentUser()?.email }}</span>
+          <button (click)="logout()" class="btn-logout" title="Sign Out">Sign Out</button>
+        </div>
+      </ng-container>
+
+      <!-- When Logged Out -->
+      <ng-template #guestActions>
+        <a routerLink="/login" class="btn btn-outline">Sign In</a>
+        <a routerLink="/register" class="btn btn-primary">Get Started</a>
+      </ng-template>
+    </div>
+  </div>
+</nav>

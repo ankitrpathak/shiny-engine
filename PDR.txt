@@ -1,0 +1,881 @@
+ON DEMAND CAR WASH PLATFORM
+PROJECT DESIGN REPORT (PDR)
+
+Prepared for AI-driven project generation and full-stack implementation
+Date: 10 Oct 2026
+
+
+1. PROJECT OVERVIEW
+The On Demand Car Wash platform is a production-ready, role-based, microservice-based web application for booking vehicle cleaning and detailing services online. The system connects customers, washers, and administrators in one ecosystem where customers can browse service packages, book appointments, make payments, leave reviews, and receive notifications; washers can manage assigned jobs and view schedules; and administrators can manage users, approve or block accounts, assign washers, monitor payments, and track operational metrics.
+
+This solution follows a real-world architecture that separates concerns across multiple Spring Boot microservices and a modular Angular frontend. It uses RESTful APIs, JWT-based security, role-based authorizations, RabbitMQ for asynchronous messaging, and Razorpay for payment integration. The application is designed to be scalable, modular, and secure, while remaining easy to extend for production deployment.
+
+The project being rebuilt in this repository already contains a major architectural backbone:
+- API Gateway
+- Eureka Discovery Server
+- User Service
+- Admin Service
+- Booking Service
+- Payment Service
+- Review Service
+- Notification Service
+- Angular Frontend
+
+The architecture supports role-based flows such as:
+- Customer logs in and creates profile
+- Admin promotes user to washer/admin
+- God super admin can promote or demote user roles
+- Users can update their profile
+- Admin can block/activate users
+- Washer can see his own profile and assignments
+- Customer can view his own bookings, reviews, payments, notifications
+- Admin gets dashboards and summaries
+
+
+2. BUSINESS OBJECTIVE
+The core objective is to create a reliable digital platform that allows customers to request car wash services quickly and conveniently while helping business owners manage operations efficiently. The system must avoid business logic flaws, support secure access control, and provide a clean, responsive dashboard for all roles.
+
+Primary goals:
+- Allow customers to register, login, and manage profile
+- Enable service package browsing and booking
+- Assign washers to bookings
+- Track job status from creation to completion
+- Accept online payments using Razorpay test mode
+- Send notifications asynchronously through RabbitMQ
+- Collect customer feedback and reviews
+- Maintain system health, analytics, and summaries for admin
+- Protect data and routes with JWT + Spring Security
+- Make data and workflows accessible via REST API and Angular UI
+
+
+3. TARGET USERS AND ROLES
+The platform supports 4 major roles and access levels:
+
+3.1 CUSTOMER / NORMAL USER
+Customer is the default role after profile creation. He can:
+- Register and login
+- Update personal profile
+- View his profile and account status
+- Browse service packages and create bookings
+- View assigned job status and booking history
+- Make payment against bookings
+- View payment status and transaction history
+- Add reviews for completed bookings and washers
+- Receive notifications
+- Request services and manage his own bookings
+
+3.2 WASHER
+Washer is promoted by Admin or God Super Admin. Washer can:
+- Login with washer role
+- See his own profile
+- View assigned bookings
+- Update booking status (in progress/completed etc.)
+- Track personal workload and history
+- View ratings/reviews received
+- Access only needed tasks
+
+3.3 ADMIN
+Admin has operational control over the system. Admin can:
+- View all users
+- Block or activate users
+- Promote users to admin or washer
+- View dashboard summaries
+- Manage service packages
+- Monitor bookings, payments, reviews, notifications
+- Assign washers to bookings
+- Manage system configuration and reports
+
+3.4 GOD SUPER ADMIN
+This is the master root account, named "God". It is a protected, non-alterable super-admin identity. It can:
+- Promote a user to admin or washer
+- Demote a user back to customer
+- Keep the platform operationally secure
+- Block or activate user accounts with high authority
+- Manage platform-level governance without being editable by others
+- Ensure no other user, even admin, can modify or remove this account
+
+Important rule: the God super admin is immutable and protected from tampering, alteration, or role removal.
+
+
+4. PROJECT SCOPE
+The platform should cover the complete customer lifecycle and operational workflows including:
+- User registration and authentication
+- Authorization with JWT and roles
+- CRUD for user data
+- Package catalog management
+- Booking lifecycle management
+- Payment flow with Razorpay test mode
+- Review and rating management
+- Notifications and async communication
+- Admin dashboard and summaries
+- Responsive Angular web application
+- Secure backend communication between services
+- API documentation with Swagger
+- JUnit and Mockito for unit testing and validation
+- SonarQube quality scanning
+- Logging and monitoring
+
+
+5. SYSTEM ARCHITECTURE
+The system is built as a microservice architecture with multiple specialized services connected by REST APIs and service discovery.
+
+5.1 LAYERED ARCHITECTURE
+Each microservice follows a standard Spring Boot layered design:
+- Controller Layer: exposes REST endpoints
+- Service Layer: contains business logic and validations
+- Repository Layer: handles persistence
+- Entity Layer: database models
+- DTO Layer: request/response objects
+- Security Layer: JWT filter, config, method security
+- Exception Layer: handles validation and domain errors
+- Asynchronous Messaging: RabbitMQ producer/consumer integration when needed
+
+5.2 MAIN COMPONENTS
+- Frontend: Angular application in Frontend/odc-frontend
+- API Gateway: central route entry point for clients
+- Eureka Server: service registration and discovery
+- User Service: authentication, profile, role management
+- Admin Service: orchestrates admin actions and dashboard summaries
+- Booking Service: service packages + bookings + assignments + status tracking
+- Payment Service: recording payments and Razorpay order creation
+- Review Service: ratings and testimonials
+- Notification Service: notification entries and status updates
+- RabbitMQ: asynchronous message bus
+- SonarQube: code quality and static analysis
+- Swagger UI: API documentation and testing
+
+5.3 TECHNOLOGY STACK
+- Java 17 or later with Spring Boot
+- Spring Cloud Gateway / API Gateway for request routing
+- Spring Cloud Netflix Eureka for service discovery
+- Spring Data JPA and relational database (likely MySQL or PostgreSQL)
+- Maven for dependency management and builds
+- Spring Security for authentication and authorization
+- JWT for token generation and verification
+- Swagger / springdoc-openapi for endpoint documentation
+- RabbitMQ for event-driven async communication
+- Razorpay Java SDK for payment order creation and handling
+- Angular for frontend
+- JUnit 5 and Mockito for unit tests
+- SLF4J + Logback for logging
+- SonarQube for code quality checking
+
+
+6. ROUTE-BASED MICROSERVICE INVENTORY AND FUNCTIONALITY
+The repository contains multiple service modules. Each one must be separately considered and mapped to frontend screens and business use cases.
+
+6.1 USER SERVICE
+Location: OnDemandCarWash-user-service
+Responsibilities:
+- User registration and login
+- JWT generation and validation
+- Profile management
+- Role management
+- User status management
+- Admin promotion/demotion workflow
+- User summary analytics
+
+Endpoints discovered:
+- POST /api/auth/register
+- POST /api/auth/login
+- GET /api/users/profile
+- GET /api/users/me
+- GET /api/users/{id}
+- GET /api/users
+- PUT /api/users/{id}
+- DELETE /api/users/{id}
+- PUT /api/users/{id}/block
+- PUT /api/users/{id}/activate
+- PUT /api/users/{id}/promote-admin
+- PUT /api/users/{id}/promote-washer
+- GET /api/users/count
+- GET /api/users/count/active
+- GET /api/users/count/blocked
+- GET /api/users/admin/summary
+
+Business rules:
+- A newly created profile is a standard customer user by default
+- Admin can promote the same user to washer or admin
+- God super admin can promote or demote users at any level
+- A user can update only personal profile data
+- Admin can block/activate users to restrict access
+- User accounts may be counted and summarized on admin dashboard
+- Sensitive roles are protected with @PreAuthorize conditions
+
+6.2 ADMIN SERVICE
+Location: adminservice
+Responsibilities:
+- Central business orchestration for admin actions
+- User state changes via user service integration
+- Dashboard aggregation from user, booking, payment, review services
+- Admin action logs and summary data
+
+Endpoints discovered:
+- PUT /api/admin/users/{userId}/block
+- PUT /api/admin/users/{userId}/activate
+- PUT /api/admin/users/{userId}/promote-admin
+- GET /api/admin/actions
+- GET /api/admin/dashboard
+
+Business rules:
+- Admin service consolidates actions from several microservices
+- Dashboard can summarize counts and statuses for users, bookings, payments, reviews
+- Fed by Feign clients to backend services
+
+6.3 BOOKING SERVICE
+Location: OnDemandCarWash-booking-service
+Responsibilities:
+- Service package creation, update, enable/disable
+- Booking creation and tracking
+- Assignment of washers to bookings
+- Status updates from created to assigned to in-progress to completed
+- Retrieve customer bookings and washer assignments
+- Admin booking summary
+
+Endpoints discovered:
+- POST /api/bookings
+- GET /api/bookings/{bookingId}
+- GET /api/bookings/admin/summary
+- GET /api/bookings/my-bookings
+- GET /api/bookings/my-assignments
+- PUT /api/bookings/{bookingId}/assign/{washerId}
+- PUT /api/bookings/{bookingId}/status/{status}
+
+Package endpoints:
+- POST /api/packages
+- PUT /api/packages/{packageId}
+- GET /api/packages/{packageId}
+- GET /api/packages
+- PUT /api/packages/{packageId}/enable
+- PUT /api/packages/{packageId}/disable
+
+Business flow:
+- Customer picks a package and creates a booking
+- Booking contains amount, date details, vehicle details, user, washer, status
+- Admin or system assigns washer
+- Washer updates work status
+- Payment and notification services can react to booking state changes
+
+6.4 PAYMENT SERVICE
+Location: OnDemandCarWash-payment-service
+Responsibilities:
+- Create and store payment records
+- Link payment to booking
+- Check payment status
+- Razorpay order creation in test mode
+- Admin summary reporting
+
+Endpoints discovered:
+- POST /api/payments
+- GET /api/payments/{paymentId}
+- GET /api/payments/booking/{bookingId}
+- PUT /api/payments/{paymentId}/status/{status}
+- GET /api/payments/admin/summary
+- POST /api/payments/create-order
+
+Razorpay integration:
+- Payment service creates Razorpay order using booking amount and currency INR
+- It fetches booking details from the booking service using REST client
+- It creates order data with booking_ prefix receipt id
+- The integration is explicitly set up for test environment credentials
+
+Business rules:
+- A booking has an associated payment record
+- Payment status is updated based on transaction step
+- Admin can review financial summaries and statuses
+- Payment data should be secured and cannot be altered without authorization
+
+6.5 REVIEW SERVICE
+Location: OnDemandCarWash-review-service
+Responsibilities:
+- Customer reviews for bookings and washers
+- Ratings and feedback management
+- View review by booking or washer
+- Admin review summaries
+
+Endpoints discovered:
+- POST /api/reviews
+- GET /api/reviews/{reviewId}
+- GET /api/reviews/booking/{bookingId}
+- GET /api/reviews/my-reviews
+- GET /api/reviews/washer/{washerId}
+- GET /api/reviews
+- GET /api/reviews/admin/summary
+
+Business rules:
+- Customers can add review after service completion
+- Reviews can be grouped by booking and washer
+- Washers can be rated by customers
+- Admin can view all reviews and summary metrics
+
+6.6 NOTIFICATION SERVICE
+Location: OnDemandCarWash-notification-service
+Responsibilities:
+- Store notifications per user
+- Send system alerts and booking/payment updates
+- Manage notification status
+- Consumes events asynchronously from RabbitMQ
+
+Endpoints discovered:
+- GET /api/notifications/user/{userId}
+- POST /api/notifications
+- GET /api/notifications/{notificationId}
+- PUT /api/notifications/{notificationId}/status/{status}
+
+Business rules:
+- Notification service receives messages from RabbitMQ
+- User sees his notifications in dashboard or inbox
+- Notification lifecycle includes creation and status update (read/unread/sent/etc.)
+
+6.7 API GATEWAY
+Responsibilities:
+- Route external calls to correct microservices
+- Centralize entry point for frontend
+- Manage request flow and service discovery
+- Improve extensibility and security
+
+6.8 EUREKA SERVER
+Responsibilities:
+- Service registration and service lookup
+- Helps inter-service communication and discovery
+- Enables scaling and failover patterns
+
+
+7. SECURITY DESIGN
+Security is a core design requirement and is already embedded in the backend architecture.
+
+7.1 JWT SECURITY MODEL
+The system uses JWT for stateless authentication and authorization.
+
+JWT responsibilities:
+- User logs in with email/password
+- Server validates credentials
+- JWT is issued with user identity and role
+- Token is included in Authorization headers for protected endpoints
+- Filter validates token and extracts principal/role
+- Role-based access checks are done using @PreAuthorize
+
+Protected roles from code examples:
+- ADMIN can access admin actions and summaries
+- WASHER can access personal profile, assignments, and role-specific endpoints
+- CUSTOMER can access self-service booking and profile flows
+
+7.2 SPRING SECURITY CONFIGURATION
+Each microservice includes a security configuration with:
+- SecurityFilterChain
+- JwtAuthenticationFilter
+- @EnableMethodSecurity
+- Protected routes and excluded Swagger docs
+- JWT validation on incoming requests
+- Extraction of email and role from token
+
+7.3 ROLE VALIDATION RULES
+- Authenticated user must have required role to access endpoint
+- Example: blockUser requires ADMIN
+- Example: getBookingSummary requires ADMIN
+- Example: updateBookingStatus allowed for ADMIN and WASHER
+- Example: getMyAssignments requires WASHER
+
+7.4 GOD SUPER ADMIN RULE
+The system must define a protected account called "God" as a root super admin that cannot be edited, blocked, or demoted by any normal admin or user. This is a critical governance requirement.
+
+Implementation constraints:
+- User service should enforce immutability of the God account in promotion/demotion workflows
+- Admin endpoints must reject attempts to promote or demote God
+- Admin operations should be validated before they mutate the user entity
+
+
+8. HTTP METHODS AND RESTFUL API DESIGN
+The backend uses standard REST semantics. The project should follow the following patterns consistently:
+
+- GET: fetch a resource or list
+- POST: create a new resource or action
+- PUT: modify existing resource or state
+- DELETE: remove a resource where allowed
+
+Examples from the project:
+- Register user: POST /api/auth/register
+- Login user: POST /api/auth/login
+- Create booking: POST /api/bookings
+- Update booking status: PUT /api/bookings/{bookingId}/status/{status}
+- Assign washer: PUT /api/bookings/{bookingId}/assign/{washerId}
+- Admin block user: PUT /api/admin/users/{userId}/block
+- Update user: PUT /api/users/{id}
+- Delete user: DELETE /api/users/{id}
+- Promote user as admin: PUT /api/users/{id}/promote-admin
+
+This is aligned with the requirement to Handle different HTTP methods (GET, POST, PUT, DELETE).
+
+
+9. SERVICE-LAYER BUSINESS LOGIC IMPLEMENTATION
+The service layer is the heart of the business rules. It must contain validation, authorization decisions, orchestration, and domain logic. The repository should only persist entities; actual business logic belongs in service classes.
+
+Examples of core logic:
+- UserServiceImpl handles:
+  - registerUser
+  - loginUser
+  - getUserById
+  - updateUser
+  - blockUser
+  - activateUser
+  - promoteToAdmin
+  - promoteToWasher
+  - getSummary
+  - count methods
+- BookingService handles:
+  - createBooking
+  - assignWasher
+  - updateBookingStatus
+  - getMyBookings
+  - getMyAssignments
+  - getBookingSummary
+- PaymentService handles:
+  - createPayment
+  - getPaymentByBookingId
+  - updatePaymentStatus
+  - summary reporting
+- ReviewService handles:
+  - createReview
+  - getReviewsByBookingId
+  - getReviewsByWasherId
+  - getReviewSummary
+- NotificationService handles:
+  - createNotification
+  - getNotificationsByUserId
+  - updateNotificationStatus
+
+All service methods should validate:
+- User existence
+- Role correctness
+- Booking ownership
+- Payment association
+- Status transitions
+- Authorization boundaries
+- Null and empty data
+- Business lifecycle constraints
+
+
+10. TESTING STRATEGY
+All microservices must include JUnit and Mockito-based unit testing. The project currently includes test support and follows a clean structure for service, controller, and integration validations.
+
+10.1 REQUIRED TEST TYPES
+- Unit tests for service layer business logic
+- Controller tests for endpoint responses and request validation
+- Repository tests where data access logic is custom
+- Security tests for role-based access control
+- Exception handling tests for invalid input and domain errors
+
+10.2 TEST TOOLS
+- JUnit 5
+- Mockito
+- Spring Boot Test
+- MockMvc for controller validation
+- Assertions for expected values and status codes
+
+10.3 TEST GOALS
+- Ensure core functionality works without regressions
+- Validate role restrictions and security
+- Confirm booking flow logic is correct
+- Verify payment status transitions and Razorpay integration behavior
+- Ensure review creation and notifications are correctly triggered
+
+In this project, the expectation is that each backend microservice has its own unit test coverage using JUnit and Mockito to satisfy production-quality standards.
+
+
+11. RABBITMQ INTEGRATION
+Messaging is required for asynchronous communication between services and to decouple business workflows.
+
+11.1 PURPOSE
+RabbitMQ is used for notification propagation and event-driven communication between services. For example:
+- Booking service publishes notifications when a booking is created
+- Payment service publishes notification on payment status
+- Notification service consumes the queue and stores notifications
+
+11.2 CONFIGURATION
+The project includes RabbitMQ configurations in service properties and config classes.
+
+Sample configuration values:
+- spring.rabbitmq.host=localhost
+- spring.rabbitmq.port=5672
+- spring.rabbitmq.username=guest
+- spring.rabbitmq.password=guest
+
+11.3 PJ USE CASES
+- Send booking created notification to customer
+- Send booking assigned notification to washer
+- Send payment confirmation to customer
+- Send status change notification when booking is completed
+- Trigger admin alerts when user blocked or promoted
+
+11.4 ASYNCHRONOUS ADVANTAGES
+- Better scalability
+- Reduced synchronous coupling between services
+- More resilient and production-friendly architecture
+- Improved event handling
+
+
+12. RAZORPAY INTEGRATION
+The payment service includes Razorpay SDK integration for real payment flow simulation in test mode.
+
+12.1 PURPOSE
+Razorpay is used to create orders for booking payments. The project uses test credentials and creates a Razorpay order in INR before final payment flow is resolved.
+
+12.2 FEATURES
+- Create order from booking amount
+- Use booking ID as receipt reference
+- Convert amount to paise for Razorpay standard
+- Use test key ID and secret configured in application properties
+
+12.3 PAYMENT FLOW
+1. Customer selects package and creates booking
+2. Booking amount is available
+3. Payment service calls Razorpay to create order
+4. Frontend receives order details and completes payment in Razorpay checkout flow
+5. Payment status is updated in backend
+6. System notifies customer and maybe admin
+
+
+13. SWAGGER / API DOCUMENTATION
+Swagger is a required part of the backend and is implemented via springdoc-openapi.
+
+Benefits:
+- List all REST endpoints per microservice
+- Test APIs directly from the browser
+- View request/response contracts
+- Improve developer productivity and QA efficiency
+- Support documentation for external integrations
+
+Expected Swagger URLs:
+- /swagger-ui/index.html
+- /v3/api-docs
+
+This is critical for building, debugging, and verifying APIs without external tools.
+
+
+14. LOGGING AND MONITORING
+The project must log important operations using SLF4J and Logback.
+
+Logging should include:
+- User registrations and logins
+- Payment creation and payment status changes
+- Booking updates and assignment events
+- Review creation
+- Notification delivery
+- Security events and invalid JWT attempts
+- Admin actions and dashboard summary access
+
+Best practice:
+- Use structured logging with context (userId, bookingId, role, action)
+- Log errors with stack traces in exception handlers
+- Avoid logging secrets or raw JWT values
+
+Monitoring:
+- Use logs for debugging and operational tracing
+- Integrate platform metrics, health endpoints and alerting in production
+
+
+15. SONARQUBE QUALITY CHECKS
+SonarQube should be part of the CI/CD and code quality workflow.
+
+Required checks:
+- Code smells
+- Bugs and vulnerabilities
+- Security hotspots
+- Duplicated code
+- Coverage thresholds
+- Maintainability rating
+
+Deliverable requirement:
+- No critical vulnerabilities in user authentication, JWT, or payment paths
+- No duplication in business logic across services
+- Minimal technical debt before deployment
+
+
+16. PROJECT ROLE WORKFLOWS
+The application must support complete end-to-end business flows.
+
+16.1 CUSTOMER REGISTRATION AND LOGIN
+- Customer opens register page
+- Enters signup details
+- Backend creates user record with default CUSTOMER role
+- User logs in and receives JWT token
+- Frontend stores token and role
+- User can access customer dashboard
+
+16.2 ADMIN PROMOTION FLOW
+- Admin or God can promote an existing customer to washer or admin
+- User role is updated in User Service
+- User can access new protected routes based on role
+- Their profile data remains consistent
+
+16.3 WASHER PROFILE FLOW
+- Washer can view his own profile via /api/users/me
+- He can access assigned bookings and update statuses
+- He can view review summaries and workload
+
+16.4 CUSTOMER PROFILE UPDATE FLOW
+- Customer logs in and updates phone, address, vehicle, preferences, and profile details
+- Validation ensures complete and correct request payload
+- Updated profile appears in customer dashboard
+
+16.5 BLOCK / ACTIVATE FLOW
+- Admin can block or activate user by ID
+- Blocked users are denied access to protected routes
+- Activated users regain access once authorized
+
+16.6 GOD SUPER ADMIN PROTECTION FLOW
+- God user is created in bootstrap or seed data
+- No other role can modify or demote God
+- Role promotion or demotion flow must explicitly reject invalid operations against God
+
+
+17. FRONTEND DESIGN AND COMPONENT REQUIREMENTS
+The frontend is a modern Angular application with route-based modules. The repo already includes route structure for:
+- Auth module
+- Admin module
+- Customer module
+- Washer module
+- Shared components
+- Core services and guards
+
+The frontend must be responsive and production-grade, with a strong landing page and hero section.
+
+17.1 FRONTEND PAGES AND COMPONENTS
+Landing page:
+- Hero banner with CTA buttons
+- Service overview cards
+- Why choose us section
+- Customer benefits section
+- Testimonials section
+- Pricing highlights
+- FAQ section
+- Contact section
+
+Authentication screens:
+- Login component
+- Register component
+- Forgot password / reset optional
+- Role-aware redirect logic after login
+
+Customer dashboard:
+- Overview cards for bookings, payments, reviews, notifications
+- Upcoming booking list
+- Bookings summary
+- Recent payments
+- Review history
+- Notification center
+
+Booking flow components:
+- Package selection component
+- Booking form component
+- Date/time selector
+- Vehicle details form
+- Confirmation page
+- Booking history page
+- Booking detail page
+
+Payment components:
+- Payment summary page
+- Razorpay checkout wrapper
+- Payment success/failure states
+- Payment history page
+
+Washer dashboard:
+- Assigned bookings list
+- Booking task details panel
+- Status update controls
+- Today’s workload summary
+- Washer profile card
+- Review summary
+
+Admin dashboard:
+- User analytics
+- Block/activate controls
+- Manage packages
+- Booking monitoring
+- Payment reports
+- Reviews overview
+- Notifications management
+- User role management
+- Platform health status
+
+Common UI components:
+- Navbar
+- Sidebar navigation
+- Footer
+- User profile card
+- Buttons and forms
+- Toaster / notification alerts
+- Loading spinners
+- Confirmation modals
+- Data tables
+- Search/filter components
+
+17.2 FRONTEND TO BACKEND MAPPING
+The Angular frontend should map to backend endpoints as follows:
+
+Auth:
+- Login component -> POST /api/auth/login
+- Register component -> POST /api/auth/register
+
+Customer profile:
+- Profile page -> GET /api/users/me and PUT /api/users/{id}
+
+Admin user management:
+- User list page -> GET /api/users
+- Block/activate -> PUT /api/users/{id}/block or /activate
+- Promote admin -> PUT /api/users/{id}/promote-admin
+- Promote washer -> PUT /api/users/{id}/promote-washer
+
+Packaging and booking:
+- Service packages page -> GET /api/packages
+- Create package (admin only) -> POST /api/packages
+- Book service -> POST /api/bookings
+- View my bookings -> GET /api/bookings/my-bookings
+- Assign washer -> PUT /api/bookings/{bookingId}/assign/{washerId}
+- Update status -> PUT /api/bookings/{bookingId}/status/{status}
+
+Payments:
+- Payment create order -> POST /api/payments/create-order
+- Payment record -> POST /api/payments
+- Check payment by booking -> GET /api/payments/booking/{bookingId}
+- Payment status update -> PUT /api/payments/{paymentId}/status/{status}
+
+Reviews:
+- Submit review -> POST /api/reviews
+- Review by booking -> GET /api/reviews/booking/{bookingId}
+- My reviews -> GET /api/reviews/my-reviews
+- Washer review summary -> GET /api/reviews/washer/{washerId}
+
+Notifications:
+- Notification inbox -> GET /api/notifications/user/{userId}
+- Update status -> PUT /api/notifications/{notificationId}/status/{status}
+
+Admin dashboard and summary:
+- User summary -> GET /api/users/admin/summary
+- Booking summary -> GET /api/bookings/admin/summary
+- Payment summary -> GET /api/payments/admin/summary
+- Review summary -> GET /api/reviews/admin/summary
+- Dashboard aggregated -> GET /api/admin/dashboard
+
+17.3 RESPONSIVE UI REQUIREMENTS
+The UI should be optimized for:
+- Desktop dashboards
+- Tablet booking workflows
+- Mobile-friendly customer flows
+- Responsive booking cards and tables
+- Mobile-first navigation
+- Image and hero section responsiveness
+- Clean accessible color themes
+- Minimal business logic issues in forms
+
+
+18. PRODUCTION-READY REQUIREMENTS
+The final system should be production ready and free from business logic flaws. The design must address the following:
+
+18.1 DATA VALIDATION
+- Validate every incoming DTO
+- Enforce required fields on registration, booking, payment, review, and notification requests
+- Validate role transitions properly
+- Reject invalid status transitions
+- Prevent booking on invalid or duplicate dates if required
+- Ensure package activation and pricing rules are enforced
+
+18.2 SECURITY HARDENING
+- No secret leakage in logs or response bodies
+- JWT validation on every protected request
+- Access control by role and ownership
+- Prevent unauthorized profile edits
+- Protect sensitive admin tasks from non-admin users
+- God role must be immutable
+
+18.3 BUSINESS LOGIC QUALITY
+- No user can see another user’s profile unless authorized
+- Only customer can see their own bookings and reviews
+- Washer can access only assigned bookings and own profile
+- Admin can view all entities but must not modify the God account
+- Payment and booking lifecycle must be consistent
+- Status transitions must be validated and event-driven
+
+18.4 ERROR HANDLING
+- Global exception handlers for validation exceptions, access denied, entity not found, bad request
+- Friendly user-facing messages
+- Logging of exceptions without exposing internals
+- Safe fallback for payment or notification failures
+
+18.5 UX AND PERFORMANCE
+- Fast dashboard loads
+- Clean transitions and mobile support
+- Pagination in large tables optional
+- Search/filter capability on admin lists
+- Loading and empty-state components
+
+
+19. COMPLETE FUNCTIONALITY SUMMARY
+The project should ultimately support this entire workflow:
+1. User registers as customer
+2. User logs in and receives JWT
+3. User views profile and updates details
+4. User browses packages and creates booking
+5. Admin reviews and assigns washer
+6. Washer picks up assigned booking and updates status
+7. Customer receives notifications on booking and status
+8. Customer pays through Razorpay test mode
+9. Customer adds review after service completion
+10. Admin views all dashboard metrics and user actions
+11. God super admin retains complete root access and protection
+12. All system actions are logged, documented, and validated
+
+
+20. RECOMMENDED DEVELOPMENT PHASES
+Phase 1: Core backend infrastructure
+- Create microservice skeletons
+- Configure Eureka and API Gateway
+- Configure Spring Security + JWT
+- Set up DTOs and entities
+- Implement user auth and roles
+
+Phase 2: Core business flows
+- Booking service and package management
+- Payment service and Razorpay integration
+- Review service and rating flow
+- Notification service and RabbitMQ integration
+
+Phase 3: Admin and analytics
+- Admin dashboard
+- Summary APIs
+- User management and promotion workflows
+- Business rule validation
+
+Phase 4: Frontend build
+- Landing page and auth routes
+- Customer dashboards and flows
+- Washer dashboards
+- Admin dashboards
+- Responsive styling
+
+Phase 5: Quality and deployment readiness
+- Unit tests with JUnit and Mockito
+- Swagger documentation
+- SonarQube quality gate
+- Logs and monitoring
+- UAT and production hardening
+
+
+21. CONCLUSION
+This project is a complete, production-oriented on-demand car wash platform designed with a clean microservice architecture, robust role-based security, scalable async messaging, real payment integration, and a responsive Angular frontend. It balances customer convenience, operational control, and administrative oversight while keeping the platform secure and maintainable.
+
+The real code already present in the repository demonstrates the intended architecture and endpoints for:
+- user management
+- auth and JWT
+- package management
+- booking lifecycle
+- payment workflow
+- review handling
+- notifications
+- admin operations
+- service discovery and gateway routing
+
+This PDR is intended to serve as a complete specification for generating the final project in a real-world style using a capable AI model such as Gemini 3.8 Flash High, and it should be used to create the full production-ready backend and frontend implementation with landing page, hero sections, dashboard flows, and business logic validation.
+
+END OF PDR
